@@ -19,6 +19,29 @@ if (path.length == 0) {
 }
 //
 
+// html elements
+const role: HTMLElement = document.getElementById("modeheader") || new HTMLElement();
+const placeholder: HTMLElement = document.getElementById("ph") || new HTMLElement();
+const hd: HTMLElement = document.getElementById("header") || new HTMLElement();
+
+// Update role display
+{
+  fetch(`/login/mode/${encodeURI(path)}`).then(
+    (data) => {
+      return data.json();
+    }
+  ).then(pathRes => {
+    if (pathRes.error) {
+      placeholder.innerHTML = `Error: Mode '${path}' not found/valid.`;
+      return;
+    }
+    role.style.color = pathRes.color;
+    role.innerHTML = pathRes.display;
+  });
+}
+//
+
+
 function redirectAfterDelay(url: string, delay: number = 1000): void {
   if (delay > 0) {
     setTimeout(() => {
@@ -29,27 +52,8 @@ function redirectAfterDelay(url: string, delay: number = 1000): void {
   }
 }
 
+
 setTimeout(async () => {
-  // html elements
-  const placeholder: HTMLElement = document.getElementById("ph") || new HTMLElement();
-  const hd: HTMLElement = document.getElementById("header") || new HTMLElement();
-  const role: HTMLElement = document.getElementById("modeheader") || new HTMLElement();
-
-  // path info
-  {
-    const pathRes = await fetch(`/login/mode/${encodeURI(path)}`).then(
-      (data) => {
-        return data.json();
-      }
-    );
-    if (pathRes.error) {
-      placeholder.innerHTML = `Error: Mode '${path}' not found/valid.`;
-      return;
-    }
-    role.style.color = pathRes.color;
-    role.innerHTML = pathRes.display;
-  }
-
   let first: string | null;
 
   while (true) {
