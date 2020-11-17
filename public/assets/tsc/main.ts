@@ -30,6 +30,26 @@ function redirectAfterDelay(url: string, delay: number = 1000): void {
 }
 
 setTimeout(async () => {
+  // html elements
+  const placeholder: HTMLElement = document.getElementById("ph") || new HTMLElement();
+  const hd: HTMLElement = document.getElementById("header") || new HTMLElement();
+  const role: HTMLElement = document.getElementById("modeheader") || new HTMLElement();
+
+  // path info
+  {
+    const pathRes = await fetch(`/login/mode/${encodeURI(path)}`).then(
+      (data) => {
+        return data.json();
+      }
+    );
+    if (pathRes.error) {
+      placeholder.innerHTML = `Error: Mode '${path}' not found/valid.`;
+      return;
+    }
+    role.style.color = pathRes.color;
+    role.innerHTML = pathRes.display;
+  }
+
   let first: string | null;
 
   while (true) {
@@ -37,8 +57,6 @@ setTimeout(async () => {
 
     // If no first name specified, display gif
     if (first == null) {
-      const placeholder: HTMLElement =
-        document.getElementById("ph") || new HTMLElement();
       placeholder.innerHTML = '<img src="/assets/187.gif"></img>';
 
       // auto refresh after 4s
@@ -66,15 +84,9 @@ setTimeout(async () => {
       }
 
       // alias probably found.
-      const el: HTMLElement =
-        document.getElementById("ph") || new HTMLElement();
-
       const alias = aliasRes.alias.alias;
 
-      el.innerHTML = `<p>Hallo, ${alias.first} ${alias.last}!</p> <pre>${alias.mode}</pre>`;
-
-      const hd: HTMLElement =
-        document.getElementById("header") || new HTMLElement();
+      placeholder.innerHTML = `<p>Hallo, ${alias.first} ${alias.last}!</p> <pre>${alias.mode}</pre>`;
 
       hd.innerHTML = "";
       redirectAfterDelay(aliasRes.loginUrl, 3000);
