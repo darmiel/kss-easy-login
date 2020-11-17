@@ -19,14 +19,14 @@ router.get("/format/:str", async (req, res) => {
     })
 });
 
-route.get("/mode/:mode", async (req, res) => {
+router.get("/mode/:mode", async (req, res) => {
     const mode = req.params.mode;
     if (!(mode in modes)) {
         return error (res, "Unknown mode");
     }
 
     const { color, display } = modes[mode];
-    
+
     return res.status(200).json({
         error: false,
         color: color,
