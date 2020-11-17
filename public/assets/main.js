@@ -1,86 +1,101 @@
-const modes = [
-  {
-    display: "Schüler",
-    url:
-      "https://portal.office.com?login_hint={ami}%40schueler.kinzig-schule.de",
-    color: "#3498db",
-  },
-  {
-    display: "Lehrer",
-    url: "https://portal.office.com?login_hint={ami}%40kinzig-schule.de",
-    color: "#e74c3c",
-  },
+"use strict";
+/*
+ ---------------------------------------
+ * Original source:
+ ? https://github.com/darmiel/easy-login
+ ----------------------------------------
+ */
+/**
+ * Array of all available modes
+ */
+var modes = [
+    {
+        display: "Schüler",
+        url: "https://portal.office.com?login_hint={ami}%40schueler.kinzig-schule.de",
+        color: "#3498db",
+    },
+    {
+        display: "Lehrer",
+        url: "https://portal.office.com?login_hint={ami}%40kinzig-schule.de",
+        color: "#e74c3c",
+    },
 ];
-
-let mode = modes[0]; // Schüler by default
+var mode = modes[0]; // Schüler by default
+// get mode by path
 {
-  let req = String(window.location);
-  if (req.toLowerCase().endsWith("/")) {
-    req = req.substring(0, req.length - 1);
-  }
-  if (req.toLowerCase().endsWith("lehrer")) {
-    mode = modes[1];
-  }
+    var path = window.location.pathname;
+    if (path.toLowerCase().endsWith("/")) {
+        path = path.substring(0, path.length - 1);
+    }
+    for (var i = 0; i < modes.length; i++) {
+        var m = modes[i];
+        if (m.display.toLowerCase() == path) {
+            mode = m;
+            break;
+        }
+    }
 }
-
+var replacementMap = {
+    " ": "-",
+    ü: "ue",
+    ö: "oe",
+    ä: "ae",
+    ß: "ss",
+};
+/**
+ * Formats a string:
+ * Lowercase, trim and umlauts [ä -> ae, ü -> ue, ß -> ss, ...]
+ * @param str Input string
+ */
+function formatString(str) {
+    str = str.toLowerCase().trim();
+    for (var key in Object.keys(replacementMap)) {
+        str = str.replace(key, replacementMap[key]);
+    }
+    return str;
+}
 // Update header
 {
-  const subheader = document.getElementById("modeheader");
-  subheader.innerHTML = mode.display;
-  subheader.style = "color: " + mode.color + ";";
+    var subheader = document.getElementById("modeheader") || new HTMLElement();
+    subheader.innerHTML = mode.display;
+    subheader.style.color = mode.color;
 }
-
 // Ask after .25s
-setTimeout(() => {
-  let firstname = "";
-
-  // Ask for first name
-  while (true) {
-    firstname = prompt("Vorname");
-    if (firstname == null) {
-      const placeholder = document.getElementById("ph");
-      placeholder.innerHTML = '<img src="/assets/187.gif"></img>';
-
-      // auto refresh after 4s
-      setTimeout(() => {
-        window.location.reload();
-      }, 4000);
-
-      return;
+setTimeout(function () {
+    var firstname = "";
+    // Ask for first name
+    while (true) {
+        firstname = prompt("Vorname");
+        // If no first name specified, display gif
+        if (firstname == null) {
+            var placeholder = document.getElementById("ph") || new HTMLElement();
+            placeholder.innerHTML = '<img src="/assets/187.gif"></img>';
+            // auto refresh after 4s
+            setTimeout(function () {
+                window.location.reload();
+            }, 4000);
+            return;
+        }
+        firstname = formatString(firstname);
+        // format first- and lastname
+        if (firstname.length == 0) {
+            alert("Vorname benötigt!");
+        }
+        else {
+            break;
+        }
     }
-
-    firstname = firstname.trim().toLowerCase();
-
-    // replace umlauts
-
-    // format first- and lastname
-    if (firstname.length == 0) {
-      alert("Vorname benötigt!");
-    } else {
-      break;
+    // Create AMI String
+    var ami = firstname;
+    // Ask for last name
+    var lastname = prompt("Nachname");
+    if (lastname != null && lastname.length > 0) {
+        lastname = formatString(lastname);
+        ami += "." + lastname;
     }
-  }
-  firstname = firstname
-    .replace(" ", "-")
-    .replace("ä", "ae")
-    .replace("ö", "oe")
-    .replace("ü", "ue");
-
-  // Ask for last name
-  let lastname = prompt("Nachname").trim().toLowerCase();
-
-  let ami = firstname;
-
-  if (lastname.length != 0) {
-    lastname = lastname
-      .replace(" ", "-")
-      .replace("ä", "ae")
-      .replace("ö", "oe")
-      .replace("ü", "ue");
-
-    ami += "." + lastname;
-  }
-
-  // redirect to `ami`
-  window.location = mode.url.replace("{ami}", ami);
+    var url = mode.url;
+    // replace AMI in url
+    url = url.replace("{ami}", ami);
+    // redirect to `ami`
+    window.location.href = url;
 }, 250);

@@ -19,7 +19,8 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd login.kinzig.schule
+            pm2 stop src/index.js
             git pull
             npm install
-            # --watch -> watch for file changes and restart automatically. If the app isn't started, start app.
-            pm2 start src/index.js  --name login.kinzig.schule-gh --watch 2>/dev/null
+            npx tsc
+            pm2 start src/index.js  --name login.kinzig.schule-gh
