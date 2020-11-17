@@ -90,7 +90,7 @@ setTimeout(async () => {
       // alias probably found.
       const alias = aliasRes.alias.alias;
 
-      placeholder.innerHTML = `<p>Hallo, ${alias.first} ${alias.last}!</p> <pre>${alias.mode}</pre>`;
+      placeholder.innerHTML = `<p>Hallo, ${alias.first} ${alias.last}! <pre>${alias.mode}</pre></p>`;
 
       hd.innerHTML = "";
       redirectAfterDelay(aliasRes.loginUrl, 3000);
