@@ -8,13 +8,18 @@ const uses = pm2.metric({
     name: "Uses"
 });
 
-console.log(__dirname);
-
 const app = express();
 app.set('trust proxy', true); // behind proxy
 
 app.use(morgan("common"));
-app.use(helmet());
+
+const environment = process.env.NODE_ENV || process.argv[2] || 'dev';
+if (environment == "production") {
+    console.log("👉  Using helmet middleware for express (production mode)");
+    app.use(helmet());
+} else {
+    console.log("⚠️  Not using helmet middleware for express because not in production mode!")
+}
 
 app.use((req, res, next) => {
     uses.set(uses.val() + 1);
