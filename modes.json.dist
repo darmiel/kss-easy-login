@@ -1,0 +1,8 @@
+{
+  "modes": {
+    "abc-schueler": {
+      "url": "https://portal.office.com?login_hint={ami}%40abc-schule.de",
+      "color": "#3498db"
+    }
+  }
+}

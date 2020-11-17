@@ -5,85 +5,38 @@
  ----------------------------------------
  */
 
-interface Mode {
-  display: string;
-  url: string;
-  color: string;
+//
+let path: string = window.location.pathname;
+while (path.endsWith("/")) {
+  path = path.substring(0, path.length - 1);
 }
+if (path.includes("/")) {
+  path = path.substring(path.lastIndexOf("/") + 1);
+}
+path = path.trim();
+if (path.length == 0) {
+  path = "kss-schueler";
+}
+//
 
-/**
- * Array of all available modes
- */
-const modes: Array<Mode> = [
-  {
-    display: "Schüler",
-    url:
-      "https://portal.office.com?login_hint={ami}%40schueler.kinzig-schule.de",
-    color: "#3498db",
-  },
-  {
-    display: "Lehrer",
-    url: "https://portal.office.com?login_hint={ami}%40kinzig-schule.de",
-    color: "#e74c3c",
-  },
-];
-
-let mode: Mode = modes[0]; // Schüler by default
-
-// get mode by path
-{
-  let path: string = window.location.pathname;
-  if (path.toLowerCase().endsWith("/")) {
-    path = path.substring(0, path.length - 1);
-  }
-  for (let i: number = 0; i < modes.length; i++) {
-    let m: Mode = modes[i];
-    if (m.display.toLowerCase() == path) {
-      mode = m;
-      break;
-    }
+function redirectAfterDelay(url: string, delay: number = 1000): void {
+  if (delay > 0) {
+    setTimeout(() => {
+      window.location.href = url;
+    }, delay);
+  } else {
+    window.location.href = url;
   }
 }
 
-const replacementMap: any = {
-  " ": "-",
-  ü: "ue",
-  ö: "oe",
-  ä: "ae",
-  ß: "ss",
-};
+setTimeout(async () => {
+  let first: string | null;
 
-/**
- * Formats a string:
- * Lowercase, trim and umlauts [ä -> ae, ü -> ue, ß -> ss, ...]
- * @param str Input string
- */
-function formatString(str: string): string {
-  str = str.toLowerCase().trim();
-  for (const key in Object.keys(replacementMap)) {
-    str = str.replace(key, replacementMap[key]);
-  }
-  return str;
-}
-
-// Update header
-{
-  const subheader: HTMLElement =
-    document.getElementById("modeheader") || new HTMLElement();
-  subheader.innerHTML = mode.display;
-  subheader.style.color = mode.color;
-}
-
-// Ask after .25s
-setTimeout(() => {
-  let firstname: string | null = "";
-
-  // Ask for first name
   while (true) {
-    firstname = prompt("Vorname");
+    first = prompt("Vorname (oder *Alias)");
 
     // If no first name specified, display gif
-    if (firstname == null) {
+    if (first == null) {
       const placeholder: HTMLElement =
         document.getElementById("ph") || new HTMLElement();
       placeholder.innerHTML = '<img src="/assets/187.gif"></img>';
@@ -96,30 +49,63 @@ setTimeout(() => {
       return;
     }
 
-    firstname = formatString(firstname);
+    // check if alias
+    if (first.startsWith("*")) {
+      const aliasRes: any = await fetch(
+        `/login?first=${encodeURI(first)}`
+      ).then((data) => {
+        return data.json();
+      });
+      if (aliasRes.error) {
+        alert("Error | " + aliasRes.message);
+        continue;
+      }
+      if (!aliasRes.loginUrl) {
+        alert("Error | Alias nicht gefunden (2)");
+        continue;
+      }
 
-    // format first- and lastname
-    if (firstname.length == 0) {
-      alert("Vorname benötigt!");
+      // alias probably found.
+      const el: HTMLElement =
+        document.getElementById("ph") || new HTMLElement();
+
+      const alias = aliasRes.alias.alias;
+
+      el.innerHTML = `<p>Hallo, ${alias.first} ${alias.last}!</p> <pre>${alias.mode}</pre>`;
+
+      const hd: HTMLElement =
+        document.getElementById("header") || new HTMLElement();
+
+      hd.innerHTML = "";
+      redirectAfterDelay(aliasRes.loginUrl, 3000);
+      return;
+    }
+
+    // not an alias
+    if (first.length == 0) {
+      alert("Vorname (oder *Alias) benötigt!");
     } else {
       break;
     }
   }
 
-  // Create AMI String
-  let ami: string = firstname;
+  const last: string = prompt("Nachname") || "";
 
-  // Ask for last name
-  let lastname: string | null = prompt("Nachname");
-  if (lastname != null && lastname.length > 0) {
-    lastname = formatString(lastname);
-    ami += "." + lastname;
+  const loginRes: any = await fetch(
+    `/login?first=${encodeURI(first)}&last=${encodeURI(last)}&type=${path}`
+  ).then((data) => {
+    return data.json();
+  });
+
+  if (loginRes.error) {
+    alert("Error | " + loginRes.message);
+    return;
   }
 
-  let url: string = mode.url;
-  // replace AMI in url
-  url = url.replace("{ami}", ami);
+  if (!loginRes.loginUrl) {
+    alert("Error | Login-URL nicht gefunden (3)");
+    return;
+  }
 
-  // redirect to `ami`
-  window.location.href = url;
+  redirectAfterDelay(loginRes.loginUrl, 0);
 }, 250);

@@ -1,0 +1,9 @@
+{
+  "aliases": {
+    "mm": {
+      "first": "Max",
+      "last": "Mustermann",
+      "mode": "abc-schueler"
+    }
+  }
+}

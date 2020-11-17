@@ -21,13 +21,13 @@ app.use((req, res, next) => {
     next();
 });
 
-// Schüler
-app.use(express.static(__dirname + "/../public/html"));
 
-// Lehrer
-app.use("/lehrer", express.static(__dirname + "/../public/html"));
+app.use("/login", require("./route"));
 
-// Assets
+// Static
 app.use("/assets", express.static(__dirname + "/../public/assets"))
+
+app.use(express.static(__dirname + "/../public/html"));
+app.use("*", express.static(__dirname + "/../public/html"));
 
 app.listen(1339, '127.0.0.1', (e) => console.log("Done!"));
