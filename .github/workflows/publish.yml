@@ -18,5 +18,8 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            ls -larth
-            echo "Test?"
+            cd login.kinzig.schule
+            git pull
+            npm install
+            # --watch -> watch for file changes and restart automatically. If the app isn't started, start app.
+            pm2 start src/index.js  --name login.kinzig.schule-gh --watch 2>/dev/null
