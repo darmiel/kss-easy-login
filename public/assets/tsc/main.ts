@@ -93,7 +93,7 @@ setTimeout(async () => {
       placeholder.innerHTML = `<p>Hallo, ${alias.first} ${alias.last}! <pre>${alias.mode}</pre></p>`;
 
       hd.innerHTML = "";
-      redirectAfterDelay(aliasRes.loginUrl, 3000);
+      redirectAfterDelay(aliasRes.loginUrl, 1000);
       return;
     }
 
